@@ -812,3 +812,287 @@ graph TD
 | **I - ML Embarcado** | ESP32/STM32 | Python + C | Variável | Sim | Muito Alta | Interesse em IA/ML |
 
 A escolha final deve equilibrar seus interesses (eletrônica, programação, ML), recursos disponíveis (tempo, orçamento, equipamentos de laboratório) e alinhamento com a orientação do TCC.
+
+
+---
+
+# PARTE III: Propostas Originais — Cruzamento de Áreas
+
+Esta seção apresenta propostas que mesclam QEE com outras disciplinas (visão computacional, NILM, digital twin, IoT distribuído) buscando combinações pouco exploradas na literatura, especialmente em trabalhos brasileiros de graduação.
+
+---
+
+## 15. Lacunas Identificadas na Literatura
+
+Após a pesquisa, os seguintes cruzamentos são pouco ou nada explorados em TCCs nacionais:
+
+1. **QEE + NILM embarcado**: Existem trabalhos de NILM e trabalhos de QEE separados, mas quase nenhum sistema embarcado de baixo custo que faça ambos simultaneamente — medir qualidade de energia E identificar qual equipamento está causando o problema.
+
+2. **QEE + Trajetória V-I como imagem + CNN embarcada**: A trajetória V-I (gráfico tensão × corrente) gera uma "assinatura visual" única por tipo de carga. Usar isso como entrada de uma CNN para classificar distúrbios e cargas é recente na literatura internacional e praticamente inexistente em implementações embarcadas de baixo custo.
+
+3. **QEE + Digital Twin local**: O conceito de digital twin aplicado a sistemas de potência existe em escala de concessionária/SCADA, mas não existe em escala de quadro de distribuição residencial/comercial com hardware de baixo custo.
+
+4. **QEE + Geração de dados sintéticos para treinamento**: Usar o próprio hardware de aquisição para coletar dados reais e complementar com dados sintéticos gerados por modelo paramétrico (não GAN, que seria complexo demais) para treinar classificadores robustos.
+
+---
+
+## 16. Proposta J: Qualímetro Inteligente com Identificação de Cargas Poluidoras via Trajetória V-I
+
+### Conceito
+
+Um sistema embarcado que, além de medir os indicadores clássicos de QEE (THD, DRP, DRC, fator de potência, frequência), identifica automaticamente qual tipo de carga conectada está degradando a qualidade da energia, usando a assinatura visual da trajetória V-I processada por uma rede neural leve.
+
+### Por que é original
+
+- Trabalhos de NILM usam trajetória V-I para identificar eletrodomésticos (geladeira, TV, etc.), mas não para diagnosticar a causa de problemas de QEE
+- Trabalhos de QEE medem indicadores, mas não apontam o responsável pelo distúrbio
+- A combinação "medir QEE + apontar o culpado" num dispositivo de baixo custo é inédita em TCCs brasileiros
+
+### Como funciona
+
+O sistema amostra tensão e corrente simultaneamente em alta frequência. A cada ciclo, plota internamente a curva V(t) × I(t), gerando uma imagem 2D (a trajetória V-I). Cargas resistivas geram uma reta, cargas indutivas geram uma elipse, cargas não-lineares (fontes chaveadas, inversores, retificadores) geram formas complexas e distintas. Essa imagem é classificada por uma CNN compacta rodando no próprio microcontrolador.
+
+### Arquitetura
+
+```mermaid
+graph TD
+    subgraph "Aquisição (STM32/ESP32-S3)"
+        A[ADC Canal V] --> C[Buffer Circular<br>256 amostras/ciclo]
+        B[ADC Canal I] --> C
+    end
+    
+    subgraph "Processamento Dual"
+        C --> D[Ramo 1: FFT<br>THD, Harmônicos, FP]
+        C --> E[Ramo 2: Trajetória V-I<br>Imagem 32×32 pixels]
+    end
+    
+    subgraph "Inteligência"
+        E --> F[CNN Compacta<br>TFLite Micro ~50KB]
+        F --> G[Classe da Carga<br>Resistiva/Indutiva/Retificador/Motor/Fonte Chaveada]
+    end
+    
+    subgraph "Saída"
+        D --> H[Indicadores PRODIST<br>+ Classificação da Carga]
+        G --> H
+        H --> I[Dashboard Web / SD Card]
+    end
+```
+
+### Metodologia simplificada
+
+1. Montar circuito de aquisição (sensor de tensão isolado + TC) com filtro anti-aliasing
+2. Programar aquisição síncrona V e I no STM32 ou ESP32-S3 (ADC dual)
+3. Implementar cálculo de indicadores PRODIST (THD, RMS, FP, frequência)
+4. Gerar trajetórias V-I como imagens 32×32 em escala de cinza
+5. Treinar CNN no PC com dataset de cargas conhecidas (coletar em bancada)
+6. Converter modelo para TFLite Micro e embarcar
+7. Validar com cargas reais e comparar com medidor de referência
+
+### Cargas para treinamento (acessíveis em laboratório)
+
+| Classe | Exemplos | Assinatura V-I esperada |
+|--------|----------|------------------------|
+| Resistiva pura | Chuveiro, lâmpada incandescente | Reta (φ ≈ 0) |
+| Indutiva | Motor monofásico, ventilador | Elipse |
+| Retificador meia-onda | Carregador simples | Meia-lua |
+| Fonte chaveada | Notebook, TV LED, carregador celular | Forma de "8" ou pico estreito |
+| Motor com inversor | Ar-condicionado inverter | Forma complexa, variável |
+
+### Custo estimado: R$150-300
+
+### Referências de apoio
+- "Non-Intrusive Load Identification Using Reconstructed V-I Images" (ResearchGate, 2021) — CNN com trajetória V-I, mas sem QEE
+- "A NILM load identification method based on structured V-I mapping" (Nature Scientific Reports, 2023) — CNN leve baseada em AlexNet
+- "An Overview of Non-Intrusive Load Monitoring Based on V-I Trajectory Signature" (MDPI Energies, 2023) — Review completo
+
+---
+
+## 17. Proposta K: Digital Twin de Quadro de Distribuição com Monitoramento de QEE em Tempo Real
+
+### Conceito
+
+Criar uma réplica digital (digital twin) de um quadro de distribuição elétrica residencial ou de laboratório, alimentada por dados reais de sensores, que simula o comportamento elétrico do circuito e permite visualizar em tempo real os indicadores de QEE de cada circuito derivado, com predição de violações normativas.
+
+### Por que é original
+
+- Digital twins de sistemas de potência existem em escala de subestação/transmissão (SCADA, OPAL-RT), mas não em escala de quadro de distribuição com hardware de R$200
+- A ideia de "espelhar" um quadro real num modelo digital que roda no navegador, com dados ao vivo, é nova para TCCs
+- Combina eletrônica (sensores), programação (backend + frontend) e engenharia elétrica (modelagem do circuito)
+
+### Como funciona
+
+Sensores nos circuitos derivados do quadro (iluminação, tomadas, ar-condicionado, etc.) enviam dados para um servidor local (Raspberry Pi ou PC). O servidor mantém um modelo simplificado do circuito (impedâncias, cargas) que é atualizado com os dados reais. Uma interface web mostra o diagrama unifilar do quadro com indicadores de QEE sobrepostos, alertas de violação PRODIST e tendências.
+
+### Arquitetura
+
+```mermaid
+graph LR
+    subgraph "Mundo Físico"
+        Q[Quadro de Distribuição]
+        S1[ESP32 + CT<br>Circuito 1]
+        S2[ESP32 + CT<br>Circuito 2]
+        S3[ESP32 + CT<br>Circuito N]
+        Q --- S1
+        Q --- S2
+        Q --- S3
+    end
+    
+    subgraph "Edge Server (RPi/PC)"
+        M[MQTT Broker]
+        B[Backend Python<br>Modelo do Circuito]
+        DB[InfluxDB<br>Séries Temporais]
+    end
+    
+    subgraph "Digital Twin (Browser)"
+        W[Interface Web<br>Diagrama Unifilar Interativo]
+        G[Gráficos Tempo Real<br>THD, V, I, FP por circuito]
+        AL[Alertas PRODIST<br>DRP, DRC, Limites THD]
+    end
+    
+    S1 -->|Wi-Fi/MQTT| M
+    S2 -->|Wi-Fi/MQTT| M
+    S3 -->|Wi-Fi/MQTT| M
+    M --> B
+    B --> DB
+    DB --> W
+    DB --> G
+    B --> AL
+```
+
+### Diferencial técnico
+
+- Cada nó ESP32 calcula RMS, potência e frequência localmente (PZEM-004T ou aquisição direta)
+- O servidor agrega, calcula THD do barramento principal e verifica conformidade PRODIST
+- A interface web renderiza o diagrama unifilar do quadro com cores (verde/amarelo/vermelho) por circuito
+- Histórico permite calcular DRP e DRC sobre períodos de medição
+
+### Custo estimado: R$100-150 por nó + R$0 (se usar PC como servidor) ou R$300 (Raspberry Pi)
+
+### Referências de apoio
+- "Design and Implementation of a Hierarchical Digital Twin for Power Systems" (MDPI Electronics, 2023)
+- "Digital Twins at the Edge: A High-Availability Framework" (MDPI Future Internet, 2025)
+- "An IoT Based Mobile Augmented Reality Application for Energy Visualization in Buildings" (MDPI Applied Sciences, 2020)
+
+---
+
+## 18. Proposta L: Sistema Embarcado de QEE com Geração Automática de Laudos Conforme PRODIST
+
+### Conceito
+
+Um analisador de QEE embarcado que, além de medir, gera automaticamente um laudo técnico em PDF conforme os critérios do PRODIST Módulo 8, incluindo classificação de tensão (adequada/precária/crítica), cálculo de DRP/DRC, verificação de limites de THD e recomendações automáticas baseadas em regras.
+
+### Por que é original
+
+- Qualímetros comerciais (Fluke, Hioki) exportam dados brutos; a interpretação normativa fica por conta do engenheiro
+- Nenhum TCC encontrado implementa geração automática de laudo com linguagem normativa
+- Combina engenharia elétrica (medição), programação (geração de PDF) e conhecimento regulatório (PRODIST)
+
+### Como funciona
+
+O sistema mede continuamente por um período configurável (7 dias, conforme PRODIST). Ao final, processa os dados armazenados, calcula os indicadores estatísticos (percentis P95%, P99%), compara com os limites normativos e gera um documento PDF estruturado com tabelas, gráficos e conclusões.
+
+### Arquitetura
+
+```mermaid
+graph TD
+    subgraph "Aquisição (7 dias contínuos)"
+        A[STM32 + Sensores] --> B[SD Card<br>Dados brutos V, I]
+    end
+    
+    subgraph "Processamento (Python no PC ou RPi)"
+        B -->|Leitura| C[Cálculo de Indicadores<br>RMS 10min, THD, Pst, FD]
+        C --> D[Análise Estatística<br>P95%, DRP, DRC]
+        D --> E[Verificação PRODIST<br>Limites por nível de tensão]
+    end
+    
+    subgraph "Geração de Laudo"
+        E --> F[Template LaTeX/ReportLab]
+        F --> G[PDF Final<br>Tabelas + Gráficos + Parecer]
+    end
+```
+
+### Conteúdo do laudo gerado
+
+1. Dados da medição (local, período, equipamento)
+2. Tabela de classificação de tensão (adequada/precária/crítica) com percentuais
+3. Indicadores DRP e DRC vs. limites (3% e 0.5%)
+4. Espectro harmônico médio e THD95% vs. limites por nível de tensão
+5. Fator de potência médio e violações
+6. Registro de eventos VTCD (se houver)
+7. Parecer automático: "CONFORME" ou "NÃO CONFORME" por indicador
+8. Recomendações (ex: "THD de tensão acima do limite — investigar cargas não-lineares no circuito")
+
+### Custo estimado: R$150-250 (hardware) + software livre
+
+### Referências de apoio
+- PRODIST Módulo 8 (ANEEL) — estrutura dos indicadores e limites
+- "An IEC 61000-4-30 Class A Power Quality Monitor: Development and Performance Analysis" (ResearchGate, 2011)
+- "Integration of Power Quality Data into SCADA: An IEC 61000-4-30-Focused Approach" (Mikrodev, 2025)
+
+---
+
+## 19. Proposta M: Analisador de QEE com Detecção de Anomalias por Autoencoder e Explicabilidade
+
+### Conceito
+
+Um sistema que monitora QEE continuamente e usa um autoencoder (rede neural não-supervisionada) para aprender o padrão "normal" da rede. Quando o sinal desvia do padrão aprendido, o sistema detecta a anomalia e usa técnicas de explicabilidade (SHAP ou análise de reconstrução) para indicar qual parâmetro está fora do normal — sem precisar de dataset rotulado de distúrbios.
+
+### Por que é original
+
+- A maioria dos trabalhos de ML para QEE usa classificação supervisionada (precisa de dados rotulados de cada tipo de distúrbio)
+- Autoencoders para detecção de anomalias em QEE são raros, e com explicabilidade são praticamente inexistentes
+- Abordagem não-supervisionada é mais realista: na prática, não se tem dataset rotulado da rede real
+- Pode ser treinado com dados da própria instalação (personalizado)
+
+### Como funciona
+
+Na fase de treinamento, o autoencoder aprende a reconstruir o vetor de features da rede em condição normal (RMS, THD, harmônicos individuais, FP, frequência). Na fase de operação, quando o erro de reconstrução ultrapassa um limiar, uma anomalia é detectada. A análise de quais features tiveram maior erro de reconstrução indica a natureza do problema.
+
+### Fluxo
+
+```mermaid
+graph TD
+    A[Aquisição Contínua<br>V, I → FFT → Features] --> B{Fase?}
+    B -->|Treinamento| C[Autoencoder aprende<br>padrão normal]
+    B -->|Operação| D[Reconstrução do vetor]
+    D --> E{Erro > Limiar?}
+    E -->|Não| F[Normal ✓]
+    E -->|Sim| G[Anomalia detectada]
+    G --> H[Análise de Erro por Feature<br>Qual parâmetro desviou?]
+    H --> I[Relatório:<br>THD 5ª harm. elevado<br>FP caiu para 0.7<br>etc.]
+```
+
+### Vantagens
+
+- Não precisa de dataset de distúrbios rotulado
+- Detecta anomalias inéditas (que não estavam no treinamento)
+- Explicável: diz qual parâmetro está anormal, não apenas "tem problema"
+- Modelo leve (autoencoder com poucas camadas), embarcável
+
+### Custo estimado: R$100-200 (hardware) + Python para treinamento
+
+### Referências de apoio
+- "Power quality disturbances classification using autoencoder and RBF neural network" (De Gruyter, 2024)
+- Conceito de autoencoder para detecção de anomalias é consolidado em manutenção preditiva industrial, mas pouco aplicado a QEE residencial
+
+---
+
+## 20. Comparativo Final das Propostas Originais
+
+| Aspecto | J (V-I + CNN) | K (Digital Twin) | L (Laudo PRODIST) | M (Autoencoder) |
+|---------|---------------|-------------------|--------------------|--------------------|
+| Originalidade | Muito alta | Alta | Alta | Muito alta |
+| Áreas mescladas | QEE + Visão Comp. + ML | QEE + IoT + Web + Modelagem | QEE + Automação documental | QEE + ML não-supervisionado |
+| Hardware | STM32/ESP32-S3 | Múltiplos ESP32 + servidor | STM32 + SD | ESP32/STM32 |
+| Software | C/C++ + TFLite | Python + MQTT + Web | C/C++ + Python + LaTeX | C/C++ + Python |
+| Custo total | R$150-300 | R$300-600 | R$150-250 | R$100-200 |
+| Complexidade | Alta | Alta | Média-Alta | Alta |
+| Viabilidade em 1 semestre | Possível (escopo reduzido) | Possível (2-3 nós) | Muito viável | Possível |
+| Impacto prático | Alto (diagnóstico) | Alto (visualização) | Muito alto (laudo pronto) | Alto (detecção inteligente) |
+| Publicável | Sim (conferência/revista) | Sim | Sim | Sim (diferencial forte) |
+
+### Recomendação pessoal
+
+Se você quer maximizar originalidade com viabilidade, a **Proposta L (Laudo PRODIST)** é a mais segura — escopo bem definido, resultado tangível (um PDF de laudo), e nenhum TCC faz isso. Se quer algo mais desafiador e com maior potencial de publicação, a **Proposta J (V-I + CNN)** ou **M (Autoencoder)** são as mais diferenciadas tecnicamente.
+
+Uma estratégia inteligente seria combinar: usar a Proposta L como base (medição + laudo) e adicionar um módulo da Proposta J ou M como diferencial de inteligência. Isso daria um TCC com contribuição prática (laudo) e científica (ML).

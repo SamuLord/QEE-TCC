@@ -1,9 +1,9 @@
-# Guia de Simulação — SAM (Simulação 2 e 3)
+# Guia de Simulação — SAM (Simulações 2 e 3)
 
 ## Objetivo
-Realizar DUAS simulações no SAM para o mesmo sistema de 50,4 kWp:
+Realizar DUAS simulações no SAM para o sistema de 99 kWp da UFRJ:
 - **Simulação 2:** SAM + Meteonorm (mesmo dado meteorológico do PVsyst)
-- **Simulação 3:** SAM + NSRDB (dado meteorológico nativo do SAM)
+- **Simulação 3:** SAM + NSRDB (dado nativo do SAM)
 
 ---
 
@@ -11,7 +11,7 @@ Realizar DUAS simulações no SAM para o mesmo sistema de 50,4 kWp:
 
 1. Abrir SAM → **File > New Project**
 2. Selecionar: **Photovoltaics > Detailed Photovoltaic Model**
-3. Modelo financeiro: **No Financial Model** (só geração de energia)
+3. Modelo financeiro: **No Financial Model**
 4. Clicar **Create**
 
 ---
@@ -20,19 +20,24 @@ Realizar DUAS simulações no SAM para o mesmo sistema de 50,4 kWp:
 
 ### SIMULAÇÃO 2 — Com Meteonorm
 1. Aba **Location and Resource**
-2. Clicar em **Browse** (não Download)
-3. Selecionar o arquivo CSV exportado do PVsyst ("Meteonorm_Brasilia_SAM.csv")
-4. Confirmar que os dados carregaram (GHI, DNI, DHI, temperatura, vento)
+2. Clicar em **Browse**
+3. Selecionar o arquivo CSV exportado do PVsyst ("Meteonorm_RJ_SAM.csv")
+4. Confirmar que os dados carregaram
 
 ### SIMULAÇÃO 3 — Com NSRDB
 1. Aba **Location and Resource**
-2. Clicar em **Download** (ícone de nuvem)
-3. Coordenadas: Lat **-15.86**, Lon **-48.05**
-4. Tipo de dado: **TMY** (Typical Meteorological Year)
-5. Se pedir API Key: criar conta grátis em https://developer.nrel.gov/signup/
-6. Clicar Download e aguardar
+2. Clicar em **Download**
+3. Coordenadas: Lat **-22.86**, Lon **-43.23**
+4. Tipo: **TMY** (Typical Meteorological Year)
+5. Se pedir API Key: https://developer.nrel.gov/signup/
+6. Clicar Download
 
-**⚠️ A ÚNICA diferença entre Simulação 2 e 3 é o arquivo meteorológico. Todo o resto é IDÊNTICO.**
+**⚠️ NOTA:** Se o NSRDB não retornar dados para essa latitude (limite ~20°S no PSMv3), tente:
+- Ajustar latitude para -22.0 ou -21.5
+- Ou usar versão GOES (cobertura até 60°S)
+- Se não funcionar de jeito nenhum, faça apenas 2 simulações e discuta a limitação no artigo
+
+**A ÚNICA diferença entre Simulação 2 e 3 é o arquivo meteorológico.**
 
 ---
 
@@ -40,36 +45,37 @@ Realizar DUAS simulações no SAM para o mesmo sistema de 50,4 kWp:
 
 1. Aba **Module**
 2. Modelo: **CEC Performance Model with Module Database**
-3. Buscar: Canadian Solar > CS3W-420P
+3. Buscar: Kyocera > KD250GH-4FB2
 
 Se não encontrar, inserir manualmente:
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Pmax | 420 W |
-| Vmpp | 39,5 V |
-| Impp | 10,64 A |
-| Voc | 48 V |
-| Isc | 11,26 A |
-| Coef. temp. Pmax | -0,37%/°C |
-| NOCT | 42°C |
-| Eficiência | 19,01% |
+| Pmax | 250 W |
+| Vmpp | 29,8 V |
+| Impp | 8,39 A |
+| Voc | 36,9 V |
+| Isc | 9,09 A |
+| Coef. temp. Pmax | -0,46%/°C |
+| Coef. temp. Voc | -0,36%/°C |
+| Tecnologia | Policristalino |
+| Células | 60 |
 
 ---
 
 ## Passo 4: Inversor
 
 1. Aba **Inverter**
-2. Buscar: Canadian Solar > CSI-50KTL-GI
+2. Buscar: Kaco > Powador 20TL3
 
-Se não encontrar, usar inversor ~50 kW com:
 | Parâmetro | Valor |
 |-----------|-------|
-| Potência CA nominal | ~50 kW |
-| Eficiência máxima | >97% |
-| Faixa MPPT | 180–1000 Vdc |
+| Potência nominal CA | 17 kW |
+| Faixa MPPT | 460–800 V |
+| Eficiência máxima | 98% |
+| **Quantidade** | **6** |
 
-**Quantidade de inversores: 1**
+Se não encontrar, usar inversor trifásico ~17 kW com faixa MPPT similar.
 
 ---
 
@@ -77,17 +83,19 @@ Se não encontrar, usar inversor ~50 kW com:
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Modules per string | 12-14 (verificar tensão MPPT) |
-| Strings in parallel | Calcular para totalizar ~120 módulos |
-| Number of inverters | 1 |
-| Total modules | ~120 (50,4 kWp) |
-| DC:AC Ratio | ~1.0 |
-| Tilt (inclinação) | **15°** |
-| Azimuth | **0°** (Norte — no SAM, 0° = Norte) |
+| Modules per string | **18** |
+| Strings in parallel | **22** (total) |
+| Total modules | **396** (99 kWp) |
+| Number of inverters | **6** |
+| DC:AC Ratio | 99/102 = ~0,97 |
+| Tilt (inclinação) | **10°** |
+| Azimuth | **-46°** (ou 314° se SAM usar 0=Norte, sentido horário) |
 | Tracking | Fixed |
-| Ground coverage ratio | 0.4 |
 
-**⚠️ AZIMUTE NO SAM:** Para hemisfério sul, o painel aponta para Norte = **0°** no SAM.
+**⚠️ AZIMUTE NO SAM:**
+- Se o SAM usa convenção 0°=Norte, sentido horário: 360° - 46° = **314°**
+- Se usa 0°=Norte, Oeste negativo: **-46°**
+- Verificar na documentação da versão instalada
 
 ---
 
@@ -97,33 +105,32 @@ Usar os **MESMOS valores** do PVsyst:
 
 | Tipo de Perda | Valor |
 |---------------|-------|
-| Soiling | 3% |
+| Soiling | 2% |
 | DC wiring | 1,5% |
 | AC wiring | 0,5% |
 | Module mismatch | 1,5% |
-| Nameplate derating | 0% |
+| Degradation | 1% |
 | Availability | 100% |
-| Degradation | 0% |
 
 ---
 
 ## Passo 7: Simular
 
-1. Clicar **Simulate** (botão verde)
-2. Verificar que não há erros no log
-3. **Repetir para ambas as simulações** (trocar apenas o arquivo meteorológico)
+1. Clicar **Simulate**
+2. Verificar ausência de erros
+3. **Repetir para ambas as simulações** (trocar apenas arquivo meteorológico)
 
 ---
 
 ## Passo 8: Extrair Resultados
 
 1. **Results > Data Tables > Monthly**
-2. Coletar: energia mensal em kWh (AC energy ou "Electricity to grid")
-3. Anotar o total anual
+2. Coletar: energia mensal em kWh ("Electricity to grid" ou "Annual Energy")
+3. Anotar total anual
 
 ### Calcular figuras de mérito:
 ```
-Yf = Energia anual (kWh) / 50,4 (kWp)
+Yf = Energia anual (kWh) / 99 (kWp)
 Pr = Yf / Yr     onde Yr = Irradiação no plano (kWh/m²) / 1 (kW/m²)
 ED = Energia anual total (kWh)
 ```
@@ -136,36 +143,36 @@ ED = Energia anual total (kWh)
 
 | Mês | SAM-Meteonorm (kWh) |
 |-----|---------------------|
-| Mar/2022 | ___ |
-| Abr/2022 | ___ |
-| Mai/2022 | ___ |
-| Jun/2022 | ___ |
-| Jul/2022 | ___ |
-| Ago/2022 | ___ |
-| Set/2022 | ___ |
-| Out/2022 | ___ |
-| Nov/2022 | ___ |
-| Dez/2022 | ___ |
-| Jan/2023 | ___ |
-| Fev/2023 | ___ |
+| Jan | ___ |
+| Fev | ___ |
+| Mar | ___ |
+| Abr | ___ |
+| Mai | ___ |
+| Jun | ___ |
+| Jul | ___ |
+| Ago | ___ |
+| Set | ___ |
+| Out | ___ |
+| Nov | ___ |
+| Dez | ___ |
 | **Total** | **___** |
 
 ### Simulação 3 — SAM + NSRDB
 
 | Mês | SAM-NSRDB (kWh) |
 |-----|-----------------|
-| Mar/2022 | ___ |
-| Abr/2022 | ___ |
-| Mai/2022 | ___ |
-| Jun/2022 | ___ |
-| Jul/2022 | ___ |
-| Ago/2022 | ___ |
-| Set/2022 | ___ |
-| Out/2022 | ___ |
-| Nov/2022 | ___ |
-| Dez/2022 | ___ |
-| Jan/2023 | ___ |
-| Fev/2023 | ___ |
+| Jan | ___ |
+| Fev | ___ |
+| Mar | ___ |
+| Abr | ___ |
+| Mai | ___ |
+| Jun | ___ |
+| Jul | ___ |
+| Ago | ___ |
+| Set | ___ |
+| Out | ___ |
+| Nov | ___ |
+| Dez | ___ |
 | **Total** | **___** |
 
 ---
@@ -174,16 +181,16 @@ ED = Energia anual total (kWh)
 
 ### Simulação 2 (SAM + Meteonorm)
 - [ ] Arquivo Meteonorm importado do PVsyst
-- [ ] Módulo: CS3W-420P (420 Wp)
-- [ ] Inversor: CSI-50KTL-GI (50 kW) × 1
-- [ ] ~120 módulos, 50,4 kWp
-- [ ] Inclinação 15° / Azimute 0° (Norte)
+- [ ] Módulo: Kyocera KD250GH-4FB2 (250 Wp)
+- [ ] Inversor: Kaco Powador 20TL3 (17 kW) × 6
+- [ ] 396 módulos, 18 em série, 22 strings
+- [ ] Inclinação 10° / Azimute -46° (NNO)
 - [ ] Perdas idênticas ao PVsyst
 - [ ] Simulado sem erros
 - [ ] Resultados mensais anotados
 
 ### Simulação 3 (SAM + NSRDB)
-- [ ] NSRDB baixado para lat -15.86, lon -48.05
+- [ ] NSRDB baixado para lat -22.86, lon -43.23
 - [ ] Todos os demais parâmetros IDÊNTICOS à Simulação 2
 - [ ] Simulado sem erros
 - [ ] Resultados mensais anotados

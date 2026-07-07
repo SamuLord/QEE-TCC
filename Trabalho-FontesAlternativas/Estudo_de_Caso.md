@@ -1,8 +1,8 @@
-# Estudo de Caso: Sistema Fotovoltaico da UnB (Campus Gama - Brasília/DF)
+# Estudo de Caso: Estacionamento Solar da UFRJ (Rio de Janeiro-RJ)
 
 ## 1. Proposta do Trabalho
 
-Replicar a metodologia do artigo de referência (comparação PVsyst vs SAM com dados reais) aplicando a um **novo sistema fotovoltaico** localizado em **Brasília-DF**, gerando resultados inéditos.
+Replicar a metodologia do artigo de referência (comparação PVsyst vs SAM com dados reais) aplicando a um **novo sistema fotovoltaico** localizado no **Rio de Janeiro-RJ**, gerando resultados inéditos.
 
 ### Artigo de Referência (Grupo 2)
 "Análise Comparativa de Desempenho de um Sistema Fotovoltaico Simulado com as Ferramentas PVsyst e SAM" — IX CBENS, 2022.
@@ -10,172 +10,147 @@ Replicar a metodologia do artigo de referência (comparação PVsyst vs SAM com 
 - Potência: 336,96 kWp
 - Comparou simulações com 12 meses de dados reais de geração
 
-### Artigo com Dados Reais para o Novo Estudo de Caso
-"Evaluation of a Grid-Connected Photovoltaic System at the University of Brasília Based on Brazilian Standard for Performance Monitoring and Analysis"
-- Autores: Velasco, L. N.; Francisco, T. M. et al.
-- Revista: MDPI Sustainability, v.16, n.24, 11212, 2024
-- DOI: 10.3390/su162411212 (open access)
-- Link: https://www.mdpi.com/2071-1050/16/24/11212
+### Fonte dos Dados Reais para o Novo Estudo de Caso
+"Análise de Desempenho do Sistema Fotovoltaico Estacionamento Solar da UFRJ"
+- Autor: Anderson Victor Videira Dantas
+- Monografia (TCC) — Engenharia Elétrica, Escola Politécnica, UFRJ, Julho/2024
+- Orientadores: Prof. Amaro Olímpio Pereira Jr., Prof. Marlon Max Huamani Bellido
+- Dados disponíveis no Zenodo: https://doi.org/10.5281/zenodo.13334703
 
 ---
 
-## 2. Por que usar o artigo da UnB?
+## 2. Por que usar o Estacionamento Solar da UFRJ?
 
-O artigo da UnB (2024) publicou dados reais de geração mensal de um sistema FV durante 12 meses (Mar/2022 a Fev/2023). Porém, ele **NÃO fez comparação entre softwares de simulação** — ele apenas calculou o PR pela norma ABNT NBR 16274:2014.
-
-**Nossa contribuição inédita:** Pegar esses dados reais de geração e compará-los com as simulações no PVsyst e no SAM, exatamente como o artigo da UNICAMP fez para Campinas. Isso permite:
-1. Validar os softwares em uma nova localidade (Brasília vs Campinas)
-2. Verificar se o NSRDB é mais preciso em latitudes menores
-3. Comparar resultados com clima tropical (Aw) vs subtropical (Cwa)
+1. **Potência próxima do artigo original:** 99 kWp (vs 337 kWp da UNICAMP)
+2. **12 meses completos de dados sem falhas** (ano 2017)
+3. **Sistema bem documentado:** monografia com todos os detalhes técnicos
+4. **Latitude muito similar à UNICAMP:** 22,86°S vs 22,82°S — permite comparação direta
+5. **Dados públicos:** Google Drive + Zenodo (DOI citável)
+6. **6 inversores** — similar ao artigo original (5 inversores)
+7. **Clima diferente:** Rio de Janeiro (Af/Am — tropical úmido) vs Campinas (Cwa — subtropical)
 
 ---
 
-## 3. Especificações do Sistema FV (UnB - Campus Gama)
+## 3. Especificações Técnicas do Sistema
 
 ### Dados Geográficos
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Local | Campus Gama - FGA/UnB, Brasília-DF |
-| Edifício | UED (Unidade de Ensino) |
-| Latitude | ~15,86°S |
-| Longitude | ~48,05°W |
-| Altitude | ~1.100 m |
-| Clima (Köppen) | Aw (Tropical com estação seca) |
-| Dentro da cobertura NSRDB? | ✅ Sim (limite: 20°S) |
+| Local | Estacionamento do Centro de Tecnologia (CT), Cidade Universitária |
+| Universidade | UFRJ — Ilha do Fundão, Rio de Janeiro-RJ |
+| Latitude | ~22,86°S |
+| Longitude | ~43,23°W |
+| Altitude | ~11 m |
+| Clima (Köppen) | Af/Am (Tropical úmido) |
+| Potência instalada | **99 kWp** |
+| Geração estimada | 140 MWh/ano |
+| Inauguração | 2016 |
+| Tipo de montagem | **Carport** (estacionamento coberto) |
+| Inclinação | **10°** |
+| Azimute | **46° para Oeste** (NNO) |
 
-### Módulos Fotovoltaicos — Canadian Solar HiKu CS3W-420P
-
-| Parâmetro | Valor |
-|-----------|-------|
-| Potência nominal máxima (Pmax) | 420 W |
-| Tensão MPPT (Vmpp) | 39,5 V |
-| Corrente MPPT (Impp) | 10,64 A |
-| Tensão de circuito aberto (Voc) | 48 V |
-| Corrente de curto-circuito (Isc) | 11,26 A |
-| Eficiência do módulo | 19,01% |
-| Temperatura operacional | -40°C a +85°C |
-| Coeficiente de temperatura (γ) | -0,37%/°C |
-| T_NOCT | 42°C |
-| Quantidade total instalada | 298 módulos |
-
-### Inversor 1 — CSI-75K-T400 (usado no subsistema de 74,76 kWp)
+### Módulos Fotovoltaicos — Kyocera KD250GH-4FB2
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Potência FV máxima de entrada | 112,5 kW |
-| Tensão máxima de entrada CC | 1100 Vdc |
-| Tensão de partida CC | 195 Vdc |
-| Faixa de tensão MPPT | 180–1000 Vdc |
-| Corrente máxima por MPPT (Imp) | 26 A |
-| Corrente máxima curto-circuito por MPPT (Isc) | 40 A |
-| Potência nominal de saída CA | 75 kW |
-| Tensão de saída nominal | 220/380 VCA |
-| Corrente nominal de saída | 114 A |
-| Eficiência máxima | 98,7% |
-| Entradas MPPT | 9 independentes |
+| Fabricante | Kyocera |
+| Modelo | KD250GH-4FB2 |
+| Potência máxima (Pmax) | 250 W |
+| Tensão de máxima potência (Vmpp) | 29,8 V |
+| Corrente de máxima potência (Impp) | 8,39 A |
+| Tensão de circuito aberto (Voc) | 36,9 V |
+| Corrente de curto-circuito (Isc) | 9,09 A |
+| Eficiência | 15,1% |
+| Coef. temperatura Voc | -0,36 %/°C |
+| Coef. temperatura Isc | +0,06 %/°C |
+| Coef. temperatura Pmax | **-0,46 %/°C** |
+| Células por módulo | 60 |
+| Tecnologia | **Policristalino** |
+| Dimensões | 1662 × 990 × 46 mm |
+| Quantidade total | **396 módulos** |
 
-### Inversor 2 — CSI-50KTL-GI (usado no subsistema de 50,4 kWp)
+### Inversores — Kaco Powador 20TL3
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Potência nominal de saída CA | 50 kW |
-| Entradas MPPT | 4 independentes |
+| Fabricante | Kaco Energy |
+| Modelo | Powador 20TL3 |
+| Potência nominal CA | **17 kW** |
+| Tensão máxima CC | 1000 V |
+| Faixa MPPT | **460–800 V** |
+| Corrente máxima CC | 2 × 18,6 A |
+| Tensão saída CA | 380/220 V |
+| Frequência | 60 Hz |
+| Corrente máxima CA | 3 × 24,6 A |
+| Fator de potência | 0,8 |
+| Eficiência máxima | **98%** |
+| Quantidade | **6 inversores** |
 
-### Configuração das Strings (Inversor 1 — CSI-75K-T400)
-- Entradas 1, 2, 5, 6: 2 strings em paralelo × 11 módulos em série
-- Entradas 3, 4: 2 strings em paralelo × 14 módulos em série
-- Entrada 7: 2 strings em paralelo × 12 módulos em série
-- Entrada 8: 1 string × 10 módulos
-
-### Configuração das Strings (Inversor 2 — CSI-50KTL-GI)
-- Entrada 1: 2 strings em paralelo × 14 módulos
-- Entradas 2, 4: 2 strings em paralelo × 12 módulos
-- Entrada 3: 3 strings em paralelo × 14 módulos
-
-### Montagem
-| Parâmetro | Valor |
-|-----------|-------|
-| Tipo | Telhado (rooftop) |
-| Inclinação | 15° |
-| Azimute | 0° (Norte geográfico) |
+### Configuração do Array
+- **22 arranjos** × 18 módulos em série = **396 módulos** (99 kWp)
+- 6 String Boxes distribuem os arranjos para 6 inversores
+- Tensão string (18 módulos em série): 18 × 29,8V = **536,4 V** → Faixa MPPT 460–800V ✅
 
 ---
 
-## 4. Subsistema Selecionado para Simulação
+## 4. Dados Reais de Geração — Ano 2017
 
-### ⚠️ IMPORTANTE: Usaremos o subsistema do INVERSOR 2 (CSI-50KTL-GI)
+Extraídos da Tabela 5.6 da monografia de Dantas (2024). ECA,d = energia CA média diária.
+Total mensal calculado: ECA,d × dias do mês.
 
-O inversor 1 (CSI-75K-T400) teve **falhas operacionais** de setembro/2022 a janeiro/2023 (desligamento + strings desconectadas), comprometendo os dados.
+| Mês | ECA,d (kWh/dia) | Dias | **Total Mensal (kWh)** | Yf (kWh/kWp/dia) | PR (%) |
+|-----|-----------------|------|----------------------|-------------------|--------|
+| Janeiro | 483,50 | 31 | **14.989** | 4,88 | 79,4 |
+| Fevereiro | 495,10 | 28 | **13.863** | 4,99 | 78,7 |
+| Março* | 391,60 | 31 | **12.140** | 3,96 | 78,8 |
+| Abril | 328,10 | 30 | **9.843** | 3,31 | 79,7 |
+| Maio | 297,80 | 31 | **9.232** | 3,01 | 79,9 |
+| Junho | 295,20 | 30 | **8.856** | 2,98 | 79,2 |
+| Julho | 338,30 | 31 | **10.487** | 3,42 | 81,3 |
+| Agosto | 302,40 | 31 | **9.374** | 3,00 | 83,7 |
+| Setembro | 440,10 | 30 | **13.203** | 4,45 | 77,1 |
+| Outubro | 400,50 | 31 | **12.416** | 4,05 | 81,1 |
+| Novembro | 396,90 | 30 | **11.907** | 4,01 | 78,9 |
+| Dezembro | 383,40 | 31 | **11.885** | 3,87 | 75,0 |
+| **Total Anual** | **379,40 (média)** | **365** | **~138.195** | **3,83** | **79,5** |
 
-O inversor 2 (CSI-50KTL-GI) funcionou **sem falhas durante os 12 meses**, com PR consistente (~0,75 a 0,91).
+*Março: dados de 2016 (ausentes na tabela 2017)
 
-**Configuração a simular:**
-| Parâmetro | Valor |
-|-----------|-------|
-| Módulos | Canadian Solar CS3W-420P |
-| Quantidade | ~120 módulos (50.400 W / 420 W) |
-| Potência instalada | 50,4 kWp |
-| Inversor | CSI-50KTL-GI (50 kW) |
-| Inclinação | 15° |
-| Azimute | Norte (0°) |
-
----
-
-## 5. Dados Reais de Geração — Inversor 2 (CSI-50KTL-GI)
-
-Extraídos da Tabela 2 do artigo da UnB (Sustainability, 2024):
-
-| Mês | E_R,year (kWh) — Geração Real | Irradiância (kWh/m²) | PR_avg |
-|-----|-------------------------------|---------------------|--------|
-| Março/2022 | 7.450 | 171,61 | 0,87 |
-| Abril/2022 | 7.560 | 182,80 | 0,81 |
-| Maio/2022 | 6.420 | 153,25 | 0,84 |
-| Junho/2022 | 6.990 | 173,27 | 0,81 |
-| Julho/2022 | 7.520 | 196,52 | 0,77 |
-| Agosto/2022 | 7.270 | 192,77 | 0,75 |
-| Setembro/2022 | 6.610 | 175,82 | 0,75 |
-| Outubro/2022 | 7.200 | 158,35 | 0,91 |
-| Novembro/2022 | 5.910 | 144,20 | 0,82 |
-| Dezembro/2022 | 5.540 | 137,19 | 0,81 |
-| Janeiro/2023 | 6.530 | 165,00 | 0,79 |
-| Fevereiro/2023 | 6.900 | 170,00 | 0,81 |
-| **TOTAL** | **82.900** | **2.020,78** | **0,81 (média)** |
-
-### Figuras de mérito do sistema real:
-- **Yf** = 82.900 / 50,4 = **1.644,8 kWh/kWp/ano**
-- **PR médio** = **0,81 (81%)**
-- **ED** = **82,9 MWh/ano**
+### Figuras de mérito anuais do sistema real (2017):
+- **Yf** = 138.195 / 99 = **1.395,9 kWh/kWp/ano**
+- **PR médio** = **79,5%**
+- **ED** = **~138,2 MWh/ano**
 
 ---
 
-## 6. Simulações a Realizar
+## 5. Simulações a Realizar
 
 | # | Software | Base de Dados Meteorológicos |
 |---|----------|------------------------------|
-| 1 | PVsyst | Meteonorm (integrado no PVsyst) |
-| 2 | SAM | Meteonorm (exportado do PVsyst em formato SAM CSV) |
-| 3 | SAM | NSRDB (download direto pelo SAM) |
+| 1 | PVsyst | Meteonorm (integrado) |
+| 2 | SAM | Meteonorm (exportado do PVsyst) |
+| 3 | SAM | NSRDB (download direto) |
 
 ---
 
-## 7. Tabela de Resultados (preencher após simulações)
+## 6. Tabela de Resultados (preencher após simulações)
 
 | Mês | Real (kWh) | PVsyst (kWh) | Erro PVsyst | SAM-Met (kWh) | Erro SAM-Met | SAM-NSRDB (kWh) | Erro NSRDB |
 |-----|-----------|-------------|-------------|--------------|-------------|----------------|------------|
-| Mar/2022 | 7.450 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Abr/2022 | 7.560 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Mai/2022 | 6.420 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Jun/2022 | 6.990 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Jul/2022 | 7.520 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Ago/2022 | 7.270 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Set/2022 | 6.610 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Out/2022 | 7.200 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Nov/2022 | 5.910 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Dez/2022 | 5.540 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Jan/2023 | 6.530 | ___ | ___% | ___ | ___% | ___ | ___% |
-| Fev/2023 | 6.900 | ___ | ___% | ___ | ___% | ___ | ___% |
-| **Total** | **82.900** | **___** | **___%** | **___** | **___%** | **___** | **___%** |
+| Jan | 14.989 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Fev | 13.863 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Mar | 12.140 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Abr | 9.843 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Mai | 9.232 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Jun | 8.856 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Jul | 10.487 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Ago | 9.374 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Set | 13.203 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Out | 12.416 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Nov | 11.907 | ___ | ___% | ___ | ___% | ___ | ___% |
+| Dez | 11.885 | ___ | ___% | ___ | ___% | ___ | ___% |
+| **Total** | **~138.195** | **___** | **___%** | **___** | **___%** | **___** | **___%** |
 
 ### Fórmula do erro:
 ```
@@ -187,3 +162,14 @@ Extraídos da Tabela 2 do artigo da UnB (Sustainability, 2024):
 ### Limites aceitáveis (Pigueiras, 2005):
 - Erro mensal: < ±30%
 - Erro anual: < ±10%
+
+---
+
+## 7. Observações sobre o NSRDB
+
+A latitude do Rio de Janeiro (~22,86°S) está no **limite** da cobertura do NSRDB (PSMv3 cobre até 20°S). Porém:
+- O artigo original da UNICAMP usou NSRDB para Campinas (22,82°S) com sucesso
+- Versões mais recentes do NSRDB (GOES-16/17) cobrem até 60°S
+- Testar no SAM: se não conseguir dados TMY para a coordenada exata, ajustar ligeiramente para norte
+
+Se o NSRDB não funcionar para o RJ, a alternativa é usar apenas 2 simulações (PVsyst + SAM com Meteonorm) e discutir essa limitação no artigo.

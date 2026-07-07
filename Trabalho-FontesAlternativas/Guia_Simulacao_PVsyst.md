@@ -1,26 +1,28 @@
 # Guia de Simulação — PVsyst (Simulação 1)
 
 ## Objetivo
-Simular o subsistema FV de 50,4 kWp da UnB (Campus Gama, Brasília-DF) e obter a geração mensal estimada para comparar com os dados reais.
+Simular o sistema FV de 99 kWp do Estacionamento Solar da UFRJ e obter a geração mensal estimada para comparar com os dados reais de 2017.
 
 ---
 
 ## Passo 1: Criar Projeto
 
 1. Abrir PVsyst → **File > New Project > Grid-Connected**
-2. Nome: "UnB_Brasilia_50kWp"
+2. Nome: "UFRJ_Estacionamento_Solar_99kWp"
 
 ---
 
 ## Passo 2: Localização e Dados Meteorológicos
 
-1. Em **Site/Meteo**:
-   - Latitude: **-15.86**
-   - Longitude: **-48.05**
-   - Altitude: **1100 m**
-   - Fuso horário: **-3 (Brasília)**
-2. O PVsyst carregará automaticamente os dados do **Meteonorm**
-3. **ANOTAR** os valores mensais de irradiação que o Meteonorm fornecer (GHI, DNI, DHI)
+| Parâmetro | Valor |
+|-----------|-------|
+| Latitude | **-22.86** |
+| Longitude | **-43.23** |
+| Altitude | **11 m** |
+| Fuso horário | **-3 (Brasília)** |
+
+- O PVsyst carregará automaticamente os dados do **Meteonorm**
+- **ANOTAR** os valores mensais de irradiação (GHI, DNI, DHI)
 
 ---
 
@@ -29,58 +31,54 @@ Simular o subsistema FV de 50,4 kWp da UnB (Campus Gama, Brasília-DF) e obter a
 | Parâmetro | Valor |
 |-----------|-------|
 | Tipo | Fixed tilted plane |
-| Inclinação (Tilt) | **15°** |
-| Azimute | **0°** (Norte — convenção PVsyst hemisfério sul) |
+| Inclinação (Tilt) | **10°** |
+| Azimute | **-46°** (46° para Oeste = Noroeste; no PVsyst hemisfério sul: Oeste é negativo*) |
+
+**⚠️ ATENÇÃO AZIMUTE:** No PVsyst, para hemisfério sul, Norte = 0°, Oeste = -90°, Leste = +90°. O sistema da UFRJ aponta 46° para Oeste do Norte, portanto: **Azimute = -46°** (ou verificar a convenção da sua versão do PVsyst).
+
+Se tiver dúvida, configure Azimute = 0° (Norte) e veja o resultado — depois ajuste para -46° e compare.
 
 ---
 
 ## Passo 4: Módulo Fotovoltaico
 
 Buscar no banco de dados:
-- **Fabricante:** Canadian Solar
-- **Modelo:** CS3W-420P (HiKu)
+- **Fabricante:** Kyocera
+- **Modelo:** KD250GH-4FB2
 
 Se não encontrar o modelo exato, inserir manualmente:
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Pmax (STC) | 420 W |
-| Vmpp | 39,5 V |
-| Impp | 10,64 A |
-| Voc | 48 V |
-| Isc | 11,26 A |
-| Eficiência | 19,01% |
-| Coef. temperatura Pmax (γ) | -0,37%/°C |
-| NOCT | 42°C |
-| Tecnologia | Monocristalino PERC |
-| Células | Half-cut |
+| Pmax (STC) | 250 W |
+| Vmpp | 29,8 V |
+| Impp | 8,39 A |
+| Voc | 36,9 V |
+| Isc | 9,09 A |
+| Eficiência | 15,1% |
+| Coef. temperatura Pmax | -0,46%/°C |
+| Coef. temperatura Voc | -0,36%/°C |
+| Tecnologia | Policristalino |
+| Células | 60 |
 
 ---
 
 ## Passo 5: Inversor
 
 Buscar no banco de dados:
-- **Fabricante:** Canadian Solar
-- **Modelo:** CSI-50KTL-GI
-
-Parâmetros para busca/validação:
+- **Fabricante:** Kaco (ou Kaco New Energy)
+- **Modelo:** Powador 20TL3
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Potência FV máxima de entrada | 58 kW |
-| Tensão máxima de entrada CC | 1100 Vdc |
-| Tensão de partida CC | 200 Vdc |
-| Faixa de tensão MPPT | **439–850 Vdc** |
-| Corrente máxima por MPPT (Imp) | 28,5 A |
-| Corrente máxima curto-circuito por MPPT (Isc) | 44,5 A |
-| Potência nominal de saída CA | 50 kW |
-| Tensão de saída nominal | 380/400 VCA |
-| Corrente nominal de saída | 76/72,2 A |
-| Eficiência máxima | 98,8% |
-| Entradas MPPT | 4 independentes |
-| Quantidade | **1** |
+| Potência nominal CA | 17 kW |
+| Tensão máxima CC | 1000 V |
+| Faixa MPPT | **460–800 V** |
+| Corrente máxima CC | 2 × 18,6 A |
+| Eficiência máxima | 98% |
+| **Quantidade** | **6 inversores** |
 
-Se não encontrar o modelo exato, usar inversor equivalente ~50 kW com faixa MPPT similar.
+Se não encontrar o modelo exato, usar inversor trifásico ~17 kW com faixa MPPT ~460-800V.
 
 ---
 
@@ -88,53 +86,52 @@ Se não encontrar o modelo exato, usar inversor equivalente ~50 kW com faixa MPP
 
 | Parâmetro | Valor |
 |-----------|-------|
-| Número total de módulos | **118** |
-| Potência instalada | **~49,56 kWp** (118 × 420W) |
+| Número total de módulos | **396** |
+| Potência instalada | **99 kWp** (396 × 250W) |
+| Arranjos | 22 arranjos de 18 módulos em série |
+| Módulos em série por string | **18** |
+| Strings em paralelo (total) | **22** |
+| Inversores | **6** |
 
-### Configuração de Strings (conforme artigo da UnB — Inversor 2):
-- Entrada MPPT 1: 2 strings em paralelo × 14 módulos em série = 28 módulos
-- Entrada MPPT 2: 2 strings em paralelo × 12 módulos em série = 24 módulos
-- Entrada MPPT 3: 3 strings em paralelo × 14 módulos em série = 42 módulos
-- Entrada MPPT 4: 2 strings em paralelo × 12 módulos em série = 24 módulos
-- **Total: 118 módulos**
+### Distribuição por inversor:
+- Cada inversor recebe ~3-4 strings (22 strings / 6 inversores ≈ 3,67)
+- String Boxes 01 a 04: 4 strings cada (4×18 = 72 módulos por SB)
+- String Box 05: 4 strings (72 módulos)
+- String Box 06: 2 strings (36 módulos)
 
-**Verificações de compatibilidade:**
-- Tensão string (14 módulos): 14 × 39,5V = 553V → Faixa MPPT 439–850V ✅
-- Tensão string (12 módulos): 12 × 39,5V = 474V → Faixa MPPT 439–850V ✅
-- Corrente MPPT (2 strings): 2 × 10,64A = 21,28A → Limite 28,5A ✅
-- Corrente MPPT 3 (3 strings): 3 × 10,64A = 31,92A → ⚠️ Acima de 28,5A
-
-> **Nota:** Se o PVsyst indicar erro na entrada MPPT 3, reduza para 2 strings nessa entrada (ajustando o total de módulos). Na prática o sistema real opera assim, então pode aceitar o aviso.
+### Verificação de compatibilidade:
+- Tensão string: 18 × 29,8V = **536,4 V** → Faixa MPPT 460–800V ✅
+- Tensão Voc string: 18 × 36,9V = **664,2 V** → Abaixo de 1000V máx ✅
+- Corrente por MPPT (2 strings): 2 × 8,39A = **16,78 A** → Abaixo de 18,6A ✅
 
 ---
 
 ## Passo 7: Perdas
 
-| Tipo de Perda | Valor |
-|---------------|-------|
-| Soiling (sujeira) | 3% (estação seca em Brasília é significativa) |
+| Tipo de Perda | Valor Sugerido |
+|---------------|----------------|
+| Soiling (sujeira) | 2% |
 | Mismatch | 1,5% |
 | Perdas ôhmicas CC | 1,5% |
 | Perdas ôhmicas CA | 0,5% |
-| Degradação | 0% (sistema com <1 ano no período analisado) |
+| Degradação | 1% (sistema com ~1 ano em 2017) |
 | Indisponibilidade | 0% |
-| Sombreamento | Não configurar (telhado sem obstruções) |
+| Sombreamento | Não configurar (carport sem obstruções) |
 
-**IMPORTANTE:** Anotar EXATAMENTE os valores de perdas usados, para replicar no SAM.
+**IMPORTANTE:** Anotar EXATAMENTE os valores usados para replicar no SAM.
 
 ---
 
 ## Passo 8: Simular
 
 1. Clicar em **Simulation > Run**
-2. Verificar que não há erros/warnings críticos
+2. Verificar ausência de erros/warnings críticos
 
 ---
 
 ## Passo 9: Extrair Resultados
 
-Coletar do relatório:
-1. **Energia mensal injetada na rede (kWh)** — para cada mês
+1. **Energia mensal injetada na rede (kWh)** — cada mês
 2. **Energia anual total (kWh)**
 3. **Performance Ratio (%)** — anual
 4. **Yf — Produtividade Final (kWh/kWp)**
@@ -144,23 +141,23 @@ Coletar do relatório:
 
 ## Passo 10: Exportar Dados Meteorológicos para o SAM
 
-1. Ir em **Databases > Meteo tables and graphs**
-2. Selecionar o site de Brasília
+1. **Databases > Meteo tables and graphs**
+2. Selecionar o site do Rio de Janeiro
 3. **Export > Hourly file > formato SAM CSV**
-4. Salvar arquivo (ex: "Meteonorm_Brasilia_SAM.csv")
-5. Este arquivo será usado na Simulação 2 (SAM + Meteonorm)
+4. Salvar (ex: "Meteonorm_RJ_SAM.csv")
 
 ---
 
 ## Checklist
 
-- [ ] Localização: -15.86, -48.05, 1100m
+- [ ] Localização: -22.86, -43.23, 11m
 - [ ] Base meteorológica: Meteonorm
-- [ ] Módulo: CS3W-420P (420 Wp)
-- [ ] Inversor: CSI-50KTL-GI (50 kW) — 1 unidade
-- [ ] ~120 módulos = 50,4 kWp
-- [ ] Inclinação 15° / Azimute Norte
-- [ ] Perdas configuradas (anotar valores exatos)
+- [ ] Módulo: Kyocera KD250GH-4FB2 (250 Wp)
+- [ ] Inversor: Kaco Powador 20TL3 (17 kW) × 6
+- [ ] 396 módulos = 99 kWp
+- [ ] Inclinação 10° / Azimute -46° (Noroeste)
+- [ ] 18 módulos em série, 22 strings
+- [ ] Perdas configuradas (anotar valores)
 - [ ] Simulação executada sem erros
-- [ ] Resultados mensais anotados (kWh por mês)
-- [ ] Dados Meteonorm exportados em formato SAM CSV
+- [ ] Resultados mensais anotados
+- [ ] Dados Meteonorm exportados para SAM

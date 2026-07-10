@@ -49,6 +49,8 @@ O PVsyst é um software comercial de dimensionamento e simulação FV amplamente
 
 **NSRDB (National Solar Radiation Database):** Desenvolvido pelo NREL, fornece dados de radiação solar derivados de satélites geoestacionários com resolução de 30 min e 4 km. A cobertura para as Américas estende-se de 60°S a 60°N (versão GOES-16/17). Inclui GHI, DNI, DHI, temperatura e velocidade do vento (NREL, 2024).
 
+**PVGIS-SARAH3:** O Photovoltaic Geographical Information System (PVGIS) é uma ferramenta gratuita desenvolvida pelo Joint Research Centre (JRC) da Comissão Europeia. A versão mais recente utiliza o banco de dados SARAH3 (Surface Solar Radiation Data Set – Heliosat, 3ª edição), derivado de imagens do satélite Meteosat, com resolução espacial de 0,05°, ou seja, aproximadamente 5 km, e temporal horária, cobrindo Europa, África, parte da Ásia e Brasil. O PVGIS-SARAH3 fornece dados de irradiância (GHI, DNI, DHI) e permite simulação direta de sistemas FV com estimativa de geração mensal e anual. Oferece dados típicos meteorológicos (TMY) para qualquer ponto dentro de sua cobertura, sendo compatível com importação no PVsyst e SAM (PVGIS, 2024).
+
 ### 2.4 Figuras de Mérito
 
 As figuras de mérito são indicadores normalizados que permitem comparar o desempenho de sistemas FV independentemente do tamanho e localização (Almeida, 2012; IEC 61724, 1998).
@@ -278,6 +280,8 @@ PIGUEIRAS, E. L. C. Caracterización de módulos fotovoltaicos con dispositivo p
 PV MAGAZINE. Solar hits 50 GW milestone in Brazil. Nov. 2024.
 
 PVSYST. PVsyst SA. Disponível em: https://www.pvsyst.com/. 2024.
+
+PVGIS. Photovoltaic Geographical Information System. Joint Research Centre, European Commission. Disponível em: https://re.jrc.ec.europa.eu/pvg_tools/. 2024.
 
 SAM. System Advisor Model. NREL. Disponível em: https://sam.nrel.gov/. 2024.
 
